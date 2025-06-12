@@ -26,7 +26,8 @@ public class user {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "userid")
+    private int userid;
 
     @Column(name = "name", length = 100, nullable = false)
     private String name;
@@ -51,5 +52,4 @@ public class user {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<recoveryRequest>recoveryRequests;
     
-
 }
