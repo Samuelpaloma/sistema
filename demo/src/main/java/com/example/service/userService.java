@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class userService {
+public class userService  {
 
     private final Iuser data;
     private final jwtServices jwtService;
