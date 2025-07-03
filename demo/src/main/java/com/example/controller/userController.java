@@ -1,76 +1,61 @@
 package com.example.controller;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.DTO.ResponsesDTO;
+import com.example.DTO.userDTO;
 import com.example.model.user;
 import com.example.service.userService;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Optional;
-
 @RestController
-@RequestMapping("/api/users")
-@CrossOrigin(origins = "*") // Opcional: permite peticiones desde otros dominios
+@RequestMapping("api/v1/users")
 public class userController {
-
     @Autowired
     private userService userService;
 
-    // ✅ Crear un nuevo usuario
-    @PostMapping
-    public ResponseEntity<user> createUser(@RequestBody user u) {
-        user savedUser = userService.saveUser(u);
-        return ResponseEntity.ok(savedUser);
+    @GetMapping("/") // solo administrador
+    public ResponseEntity<Object> getAllUsers() {
+        return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
     }
 
-    // ✅ Obtener todos los usuarios
-    @GetMapping
-    public ResponseEntity<List<user>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+  
+    @GetMapping("profile")
+    public ResponseEntity<Object> profile(@AuthenticationPrincipal UserDetails userDetails) {
+            
+        return new ResponseEntity<Object> (userDetails,HttpStatus.OK);
     }
 
-    // ✅ Obtener usuario por ID
-    @GetMapping("/{id}")
-    public ResponseEntity<user> getUserById(@PathVariable int id) {
-        Optional<user> optionalUser = userService.getUserById(id);
-        return optionalUser.map(ResponseEntity::ok)
-                           .orElse(ResponseEntity.notFound().build());
+    @DeleteMapping("/{id}") //solo administrador, falta desarrollar
+    public ResponseEntity<Object> deleteUser(@PathVariable int id) {
+        ResponsesDTO response = userService.deleteUser(id);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // ✅ Actualizar usuario
-    @PutMapping("/{id}")
-    public ResponseEntity<user> updateUser(@PathVariable int id, @RequestBody user updatedUser) {
-        Optional<user> existingUser = userService.getUserById(id);
-        if (existingUser.isPresent()) {
-            updatedUser.setId(id);
-            return ResponseEntity.ok(userService.saveUser(updatedUser));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    
+    // @DeleteMapping("/{id}") //usuario, falta desarrollar
+    // public ResponseEntity<Object> deleteUser(@PathVariable int id) {
+    //     ResponsesDTO response = userService.deleteUser(id);
+    //     return new ResponseEntity<>(response, HttpStatus.OK);
+    // }
+
+    @PutMapping("/updateProfileUser")//falta
+    public ResponseEntity<Object> updateUser(@PathVariable int id, @RequestBody userDTO userDTO) {
+        ResponsesDTO response = userService.updateUser(id, userDTO);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // ✅ Eliminar usuario
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable int id) {
-        Optional<user> existingUser = userService.getUserById(id);
-        if (existingUser.isPresent()) {
-            userService.deleteUser(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    // ✅ Buscar usuario por email (opcional)
-    @GetMapping("/email/{email}")
-    public ResponseEntity<user> getUserByEmail(@PathVariable String email) {
-        user u = userService.getUserByEmail(email);
-        if (u != null) {
-            return ResponseEntity.ok(u);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
 }

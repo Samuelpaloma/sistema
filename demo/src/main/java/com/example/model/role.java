@@ -9,14 +9,19 @@ import java.util.List;
 @Table(name = "roles")
 @Data
 @NoArgsConstructor
+@lombok.AllArgsConstructor
 public class role {
 
-    @Id
+     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Column(name = "roleid")
+    private int roleid;
 
-    @Column(name = "name", length = 50, nullable = false, unique = true)
+    @Column(name = "name", length = 100, nullable = false)
     private String name;
+
+    @Column(name = "description", length = 255, nullable = true)
+    private String description;
 
     @OneToMany(mappedBy = "roles", cascade = CascadeType.ALL)
     private List<user> users;
