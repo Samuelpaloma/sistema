@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.repository.Iuser;
+import com.example.repository.Irole;
 import com.example.DTO.RequestLoginDTO;
 import com.example.DTO.RequestRegisterDTO;
 import com.example.DTO.ResponseLoginDTO;
@@ -35,6 +36,7 @@ public class userService  {
     private final jwtServices jwtService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final Irole roleRepository;
 
 
     public List<user> findAll() {
@@ -65,11 +67,25 @@ public class userService  {
 
     
 
-    public ResponsesDTO save(RequestRegisterDTO userDTO) {
+    public ResponseLoginDTO save(RequestRegisterDTO userDTO) {
         user usuario = convertToModelRegister(userDTO);
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        // Si no se especifica un role válido, asignar el rol por defecto 'USER'
+        if (usuario.getRole() == null || usuario.getRole().getRoleid() == 0) {
+            role defaultRole = roleRepository.findAll().stream()
+                .filter(r -> r.getName().equalsIgnoreCase("USER"))
+                .findFirst()
+                .orElse(null);
+            if (defaultRole != null) {
+                usuario.setRole(defaultRole);
+            } else {
+                throw new RuntimeException("No existe un rol por defecto 'USER' en la base de datos");
+            }
+        }
         data.save(usuario);
-        return new ResponsesDTO(HttpStatus.OK.toString(), "Usuario guardado correctamente");
+        // Generar el token JWT para el usuario registrado
+        String token = jwtService.getToken(usuario);
+        return new ResponseLoginDTO(token);
     }
 
    

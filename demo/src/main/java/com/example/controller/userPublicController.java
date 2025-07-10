@@ -23,10 +23,10 @@ public class userPublicController {
      @Autowired
     private userService userService;
 
-   @PostMapping("/register")
-    public ResponseEntity<Object> saveUser(@RequestBody RequestRegisterDTO user) {
-        ResponsesDTO response = userService.save(user);
-        // ResponsesDTO response =null;
+
+    @PostMapping("/register")
+    public ResponseEntity<ResponseLoginDTO> saveUser(@RequestBody RequestRegisterDTO user) {
+        ResponseLoginDTO response = userService.save(user);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
